@@ -317,7 +317,7 @@ end
 
 -- helper functions
 
-function strMul(str, f)
+local function strMul(str, f)
     local ret = ""
     for i = 1, f do
         ret = ret .. str
