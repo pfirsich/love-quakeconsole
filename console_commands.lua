@@ -10,7 +10,7 @@ function questionHandler.enter()
 end
 
 function questionHandler.setText()
-    questionHandler.text = "\n          Is this real?\n\n"
+    questionHandler.text = "\n             " .. questionHandler.question .. "\n\n"
     questionHandler.text = questionHandler.text .. console.buttonText({
         {text = "yes", selected = questionHandler.chosen == "yes"},
         {text = "no", selected = questionHandler.chosen == "no"},
@@ -37,4 +37,8 @@ function console.commands.recipe(str)
     console.prompt("What kind ingredients would you like to use?", function(str)
         console.print("I don't know any recipes that use " .. str)
     end)
+end
+
+function console.commands.quit()
+    love.event.quit()
 end

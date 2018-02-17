@@ -1,7 +1,6 @@
 local utf8 = require("utf8")
 
 local console = {}
-local inspect = require("inspect")
 
 -- configuration
 console.key = "f8"
@@ -41,6 +40,10 @@ function console.update(dt)
     else
         console.height = console.height - deltaHeight
         console.height = math.max(console.height, 0)
+    end
+
+    if console.takenBy and console.takenBy.update then
+        console.takenBy.update(dt)
     end
 end
 
@@ -95,8 +98,15 @@ function console.draw()
 end
 
 function console.takeOver(handler)
+    if handler then
+        if not handler.text or not handler.keypressed then
+            error("console.takeOver handler must have .text and .keypressed attribute!")
+        end
+        if handler.enter then
+            handler.enter()
+        end
+    end
     console.takenBy = handler
-    if handler and handler.enter then handler.enter() end
 end
 
 function console.prompt(str, handler)
