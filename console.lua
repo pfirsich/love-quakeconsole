@@ -275,7 +275,7 @@ function console.keypressed(key)
 end
 
 function console.textinput(str)
-    if console.active then
+    if console.active and not console.takenBy then
         paste(str)
     end
 end
@@ -380,8 +380,9 @@ local function strMul(str, f)
     return ret
 end
 
-function console.buttonText(options, width)
-    local lines = {"", "", "", "", "", "", ""}
+function console.buttonText(options, offset, width)
+    local indent = strMul(" ", offset or 2)
+    local lines = {indent, indent, indent, indent, indent, indent, indent}
     for _, option in ipairs(options) do
         local w = width or option.width or 16
         local textOffset = math.max(0, math.floor((w - option.text:len() - 2) / 2))
@@ -403,6 +404,51 @@ function console.buttonText(options, width)
         end
     end
     return table.concat(lines, "\n")
+end
+
+local optChooseHandler = {text = ""}
+
+function optChooseHandler.enter()
+    optChooseHandler.current = 1
+    optChooseHandler.setText()
+end
+
+function optChooseHandler.setText()
+    local options = {}
+    for i, option in ipairs(optChooseHandler.options) do
+        table.insert(options, {text = option, selected = i == optChooseHandler.current})
+    end
+    optChooseHandler.text = " \n \n    " ..
+        optChooseHandler.title .. "\n\n" .. console.buttonText(options)
+end
+
+function optChooseHandler.keypressed(key)
+    if key == "left" then
+        optChooseHandler.current = optChooseHandler.current - 1
+        if optChooseHandler.current < 1 then
+            optChooseHandler.current = #optChooseHandler.options
+        end
+        optChooseHandler.setText()
+    elseif key == "right" then
+        optChooseHandler.current = optChooseHandler.current + 1
+        if optChooseHandler.current > #optChooseHandler.options then
+            optChooseHandler.current = 1
+        end
+        optChooseHandler.setText()
+    end
+
+    if key == "return" then
+        optChooseHandler.callback(optChooseHandler.current,
+            optChooseHandler.options[optChooseHandler.current])
+        console.takeOver()
+    end
+end
+
+function console.chooseOption(title, options, func)
+    optChooseHandler.options = options
+    optChooseHandler.callback = func
+    optChooseHandler.title = title
+    console.takeOver(optChooseHandler)
 end
 
 return console

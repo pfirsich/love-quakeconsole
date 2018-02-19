@@ -33,6 +33,15 @@ function console.commands.question(str)
     console.takeOver(questionHandler)
 end
 
+function console.commands.ezquestion(str)
+    console.chooseOption("Why?", {"Pressure", "Conviction"}, function(i, option)
+        console.print(i .. " " .. option)
+    end)
+end
+
+console.help.recipe = {section = "Awesome",
+    "Find recipes with a given ingredient",
+    "Will ask for an ingredient once invoked."}
 function console.commands.recipe(str)
     console.prompt("What kind ingredients would you like to use?", function(str)
         console.print("I don't know any recipes that use " .. str)
