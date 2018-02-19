@@ -11,6 +11,7 @@ console.textColor = {255, 255, 255, 255}
 console.maxLines = 100
 console.drawLines = 30
 console.maxHistory = 20
+console.scrollNotice = true
 
 -- actual state
 console.height = 0
@@ -80,6 +81,12 @@ function console.draw()
                 index = 1
             end
         end
+
+        if console.scrollNotice then
+            local text = "Press alt+up/down to scroll"
+            lg.print(text, winW - font:getWidth(text) - margin, margin)
+        end
+
         lg.setScissor(unpack(scissorBackup))
 
         if inputY > 0 then
