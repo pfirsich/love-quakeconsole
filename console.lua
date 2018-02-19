@@ -126,9 +126,9 @@ function console.exec(str)
         console.promptedBy(str)
         console.promptedBy = nil
     else
-        local cmd = str:match("(%w+).*")
+        local cmd, args = str:match("(%w+)(.*)")
         if console.commands[cmd] then
-            console.commands[cmd](str)
+            console.commands[cmd](args)
         else
             console.print(("Unknown command: '%s'"):format(cmd))
         end
@@ -282,11 +282,18 @@ end
 
 -- builtin commands
 console.commands = {}
+console.help = {}
 
-function console.commands.echo(str)
-    console.print(str:sub(("echo "):len() + 1))
+local function trim(s)
+  return s:match "^%s*(.-)%s*$"
 end
 
+console.help.echo = {"Print a string", section = "Built-In"}
+function console.commands.echo(args)
+    console.print(trim(args))
+end
+
+console.help.clear = {"Clear the console", section="Built-In"}
 function console.commands.clear()
     console.buffer = {}
     console.nextBufferIndex = 1
@@ -298,8 +305,9 @@ console.env = {
     ["print"] = console.print,
 }
 
-function console.commands.lua(str)
-    local cmd = str:sub(("lua "):len() + 1)
+console.help.lua = {"Execute lua code", section = "Built-In"}
+function console.commands.lua(args)
+    local cmd = trim(args)
     local chunk, err = loadstring(cmd)
     if not chunk then
         print("ls", err)
@@ -319,6 +327,46 @@ function console.commands.lua(str)
         local msg = arg
         print("call", msg)
         console.print("Error!: " .. msg)
+    end
+end
+
+console.help.help = {"Show help", "Use 'help <command>' to show extended help", section="Built-In"}
+function console.commands.help(args)
+    local cmd = trim(args)
+    if console.commands[cmd] then
+        local help = console.help[cmd]
+        if help then
+            console.print("(" .. help.section .. ")")
+            console.print(help[1])
+            if help[2] then
+                console.print(" \n")
+                console.print(help[2])
+            end
+        else
+            console.print("No help available")
+        end
+    else
+        if cmd:len() > 0 then
+            console.print(("Unknown command '%s'!"):format(cmd))
+        end
+        local sections = {}
+        for command, _ in pairs(console.commands) do
+            local section = console.help[command] and console.help[command].section or "Other"
+            sections[section] = sections[section] or {}
+            table.insert(sections[section], command)
+        end
+
+        for sectionName, section in pairs(sections) do
+            console.print(sectionName .. ":")
+            for _, command in ipairs(section) do
+                local text = "    " .. command
+                if console.help[command] then
+                    text = text .. " - " .. console.help[command][1]
+                end
+                console.print(text)
+            end
+            console.print(" \n")
+        end
     end
 end
 
