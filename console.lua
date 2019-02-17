@@ -102,6 +102,8 @@ function console.draw()
             end
         end
     end
+
+    lg.setScissor(unpack(scissorBackup))
 end
 
 function console.takeOver(handler)
